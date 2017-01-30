@@ -65,24 +65,40 @@ function createViewModel() {
     viewModel.onTap = function() {
         // Define an Intent for geofence transitions
 
+        var connectionListeners = new com.google.android.gms.common.api.GoogleApiClient.ConnectionCallbacks({
+            onConnected: function(connectionHint) {
+                console.log("onConnected: " + connectionHint);
+
+                GoogleApi.LocationServices.GeofencingApi.addGeofences(
+                    mGoogleApiClient,
+                    getGeofencingRequest(),
+                    getGeofencePendingIntent()
+                ); //.setResultCallback(this);
+            },
+            onConnectionSuspended: function(cause) {
+                console.log("onConnectionSuspended: " + cause);
+            }
+        });
+
+        var connectionFailedListeners = new com.google.android.gms.common.api.GoogleApiClient.OnConnectionFailedListener({
+            onConnectionFailed: function(result) {
+                console.log("onConnectionFailed: " + result);
+            }
+        });
+
         mGoogleApiClient = new com.google.android.gms.common.api.GoogleApiClient.Builder(context)
-            //.addConnectionCallbacks(this)
-            //.addOnConnectionFailedListener(this)
+            .addConnectionCallbacks(connectionListeners)
+            .addOnConnectionFailedListener(connectionFailedListeners)
             .addApi(GoogleApi.LocationServices.API)
             .build();
 
-        //TODO: call this when the API is connected (on callback)
-        GoogleApi.LocationServices.GeofencingApi.addGeofences(
-            mGoogleApiClient,
-            getGeofencingRequest(),
-            getGeofencePendingIntent()
-        ); //.setResultCallback(this);
+        mGoogleApiClient.connect();
 
-        console.log(geofanceEvent);
-        console.log(geofancePoint);
-        console.log(intentService);
-        console.log(request);
-        console.log(intent);
+        // console.log(geofanceEvent);
+        // console.log(geofancePoint);
+        // console.log(intentService);
+        // console.log(request);
+        // console.log(intent);
 
     };
 
