@@ -24,6 +24,9 @@ function createViewModel() {
     viewModel.onTap = function() {
         services.setupAlarm(utils.ad.getApplicationContext());
     }
+    viewModel.onGeo = function() {
+        console.log("butona");
+    }
 
     return viewModel;
 }

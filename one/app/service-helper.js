@@ -20,7 +20,7 @@ function setGeofence(context) {
     var LocationServices = com.google.android.gms.location.LocationServices;
     var ArrayList = java.util.ArrayList;
     var GoogleApi = com.google.android.gms.location;
-    var GEOFENCE_RADIUS = 10;
+    var GEOFENCE_RADIUS = 100;
 
     var geofences = [];
     var geofencePendingIntent = null;
@@ -49,6 +49,8 @@ function setGeofence(context) {
         }]
     }];
 
+
+
     initialize(chainsData, context);
 
     function initialize(chainsData, context) {
@@ -60,7 +62,7 @@ function setGeofence(context) {
         //This callback will be executed within the Java context - keep in mind scope chain might be broken!!!
         let onConnectedCallbackGoogle = function() {
             let geofencesList = [];
-
+            // TODO is not functional good!
             chainsData.forEach(chain => {
                 chain.stores.forEach(store => {
                     let geofence = {
@@ -106,21 +108,23 @@ function setGeofence(context) {
 
     function createGeofencePoints(geofencesList) {
         let geofencePointsList = new ArrayList();
-
+        let id = 0;
         geofencesList.forEach(geofence => {
+            id += 1;
+            let geofenceId = geofence.chain.name + id;
             let geofencePoint = new GoogleApi.Geofence.Builder()
-                .setRequestId(geofence.chain.name)
+                .setRequestId(geofenceId)
                 .setCircularRegion(
                     geofence.store.lat,
                     geofence.store.lng,
                     GEOFENCE_RADIUS
                 )
-                .setExpirationDuration(12 * 60 * 60 * 1000)
+                .setExpirationDuration(-1) // forever
                 .setTransitionTypes(1 | 2)
                 .build();
 
             geofencePointsList.add(geofencePoint);
-            console.log('Created geofence!');
+            console.log('Created geofence with id: ' + geofenceId);
         });
 
         return geofencePointsList;
@@ -128,9 +132,8 @@ function setGeofence(context) {
 
     function getGeofencingRequest(geofancePointsList) {
         let builder = new GoogleApi.GeofencingRequest.Builder()
-        builder.setInitialTrigger(GoogleApi.GeofencingRequest.INITIAL_TRIGGER_ENTER)
+        builder.setInitialTrigger(1 | 2 | 4);
         builder.addGeofences(geofancePointsList);
-
         let request = builder.build();
         console.log('geofence request ready! ' + request);
 
@@ -168,10 +171,12 @@ function setGeofence(context) {
                 googleApiClient,
                 geofencingRequest,
                 geofencePendingIntent).setResultCallback(new ResultCallback({
-                onResult: (statuss) => {
-                    console.log(statuss);
+                onResult: (status) => {
+                    console.log(status);
                 }
             }));
+            //android.support.v4.content.WakefulBroadcastReceiver.startWakefulService(context, intent);
+
             console.log("LocationServices - end");
 
             console.log('Geofence event listen!!!');

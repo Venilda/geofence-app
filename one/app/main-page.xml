@@ -2,6 +2,7 @@
   <StackLayout>
     <Label text="Start Notifications" class="title"/>
     <Button text="Every 20s" tap="{{ onTap }}" />
+    <Button text="Revert geofence" tap="{{ onGeo }}" />
     <Label text="{{ message }}" class="message" textWrap="true"/>
   </StackLayout>
 </Page>

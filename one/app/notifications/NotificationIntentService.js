@@ -6,32 +6,36 @@ com.pip3r4o.android.app.IntentService.extend("com.tns.notifications.Notification
             proba(intent);
         }
 
-        //android.support.v4.content.WakefulBroadcastReceiver.completeWakefulIntent(intent);
+        android.support.v4.content.WakefulBroadcastReceiver.completeWakefulIntent(intent);
     }
 });
 
 function proba(intent) {
     let GoogleApi = com.google.android.gms.location;
     let ArrayList = java.util.ArrayList;
+    let geofence = com.google.android.gms.location.Geofence;
 
     let geofencingEvent = GoogleApi.GeofencingEvent.fromIntent(intent);
     console.log("Intent Service Called!!!");
 
     if (geofencingEvent.hasError()) {
 
-        console.log('Error in the hasErrow' + geofencingEvent.getErrorCode());
+        console.log('Error in the hasErrow ' + geofencingEvent.getErrorCode());
         return;
     }
 
     let geofenceTransition = geofencingEvent.getGeofenceTransition();
+    console.log(geofenceTransition);
 
     // Test that the reported transition was of interest.
     if (geofenceTransition === GoogleApi.Geofence.GEOFENCE_TRANSITION_ENTER || geofenceTransition === GoogleApi.Geofence.GEOFENCE_TRANSITION_EXIT) {
 
         // Get the geofences that were triggered. A single event can trigger
         // multiple geofences.
+        var utils = require("utils/utils");
         let triggeringGeofences = geofencingEvent.getTriggeringGeofences();
 
+        let context = utils.ad.getApplicationContext();
         // Get the transition details as a String.
         let geofenceTransitionDetails = getGeofenceTransitionDetails(
             context,
@@ -44,41 +48,28 @@ function proba(intent) {
 
     } else {
         // Log the error.
-        console.log('Error in the trigger!!!!!!!!');
+        console.log('No triggering!!!!!!!!');
     }
 
-    var getGeofenceTransitionDetails = function(context, geofenceTransition, triggeringGeofences) {
+    function getGeofenceTransitionDetails(context, geofenceTransition, triggeringGeofences) {
         let geofenceTransitionString = getTransitionString(geofenceTransition); // Get the Ids of each geofence that was triggered.
-        let triggeringGeofencesIdsList = new ArrayList();
+        let triggeringGeofencesIdsList = '';
 
-        triggeringGeofences.forEach(triggeringGeofence => {
-            triggeringGeofencesIdsList.add(triggeringGeofence.getRequestId());
-        });
+        for (let i = 0; i < triggeringGeofences.size(); i += 1) {
+            let geofence = triggeringGeofences.get(i);
+            console.log(geofence);
+            triggeringGeofencesIdsList += geofence.getRequestId() + ", ";
+        }
+        console.log(triggeringGeofencesIdsList);
 
-        let triggeringGeofencesIdsString = triggeringGeofencesIdsList.join(", ");
-
-        return geofenceTransitionString + ": " + triggeringGeofencesIdsString;
+        return geofenceTransitionString + ": " + triggeringGeofencesIdsList;
     }
 
-    var sendNotification = function(str) {
-        LocalNotifications.schedule([{
-            id: 1,
-            title: str,
-            body: 'The body',
-            ticker: 'Hi, We have a new promotions',
-            at: new Date(new Date().getTime() + (5 * 1000))
-        }]).then(
-            function() {
-                console.log('Notification is fired!');
-
-            },
-            function(error) {
-                console.log("doSchedule error: " + error);
-            }
-        );
+    function sendNotification(str) {
+        return console.log(str);
     };
 
-    var getTransitionString = function(transitionType) {
+    function getTransitionString(transitionType) {
         switch (transitionType) {
             case GoogleApi.Geofence.GEOFENCE_TRANSITION_ENTER:
                 return 'Entered';
